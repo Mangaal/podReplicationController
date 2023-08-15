@@ -1,0 +1,12 @@
+apiVersion: podreplica-app.my.customecontroller/v1alpha1
+kind: PodRepica
+metadata:
+  labels:
+    app.kubernetes.io/name: podrepica
+    app.kubernetes.io/instance: podrepica-sample
+    app.kubernetes.io/part-of: podreplicationcontroller
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: podreplicationcontroller
+  name: podrepica-sample
+spec:
+  # TODO(user): Add fields here

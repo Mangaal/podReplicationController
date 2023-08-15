@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- podreplica-app_v1alpha1_podrepica.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
