@@ -9,4 +9,10 @@ metadata:
     app.kubernetes.io/created-by: podreplicationcontroller
   name: podrepica-sample
 spec:
-  # TODO(user): Add fields here
+  replicas: 2
+  template: 
+     containers:
+     - image: nginx
+       name: nginx
+       
+ 

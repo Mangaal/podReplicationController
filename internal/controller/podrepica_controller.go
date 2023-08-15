@@ -27,7 +27,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -55,16 +54,19 @@ type PodRepicaReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
 func (r *PodRepicaReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	l := log.FromContext(ctx)
 
 	// TODO(user): your logic here
+
+	fmt.Println("New Request Received")
 
 	podRepica := &v1alpha1.PodRepica{}
 
 	err := r.Get(ctx, req.NamespacedName, podRepica)
 
 	if err != nil {
-		l.Error(err, "Error Geting podReplica :"+err.Error())
+		fmt.Println("Resource delted not found")
+
+		return ctrl.Result{}, nil
 	}
 
 	loop := *podRepica.Spec.Replicas
@@ -81,7 +83,7 @@ func (r *PodRepicaReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		}
 
 		if err := controllerutil.SetControllerReference(podRepica, pod, r.Scheme); err != nil {
-			l.Error(err, "Error Seting  controllerReference :"+err.Error())
+			fmt.Println("Error Seting  controllerReference :" + err.Error())
 		}
 
 		existingPod := &coreV1.Pod{}
@@ -89,15 +91,33 @@ func (r *PodRepicaReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		err := r.Get(ctx, client.ObjectKey{Name: pod.Name, Namespace: pod.Namespace}, existingPod)
 
 		if err != nil {
-			fmt.Println("Error Geting Pod  Or Not fopund :" + err.Error())
+			fmt.Println("Error Geting Pod  Or Pod Not Found")
 
-			_ = r.Create(ctx, pod)
+			err := r.Create(ctx, pod)
+
+			if err != nil {
+				fmt.Println("Error Creating Pod")
+			}
+
+			fmt.Println("Pod " + pod.Name + " created")
 
 		} else {
 
 			if !reflect.DeepEqual(pod.Spec, existingPod.Spec) {
 
-				_ = r.Update(ctx, pod)
+				for i := 0; len(pod.Spec.Containers) > i; i++ {
+
+					existingPod.Spec.Containers[i].Image = pod.Spec.Containers[i].Image
+
+				}
+
+				err = r.Update(ctx, existingPod)
+
+				if err != nil {
+					fmt.Println("Error Updating Pod", err)
+				}
+
+				fmt.Println("Pod " + pod.Name + " Updated")
 
 			}
 
